@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  name      String
+  email     String  @unique
+  password  String?
+  phone     String?
+  avatarURL String?
+  google    Boolean @default(false)
+  googleId  String? @unique
+
+  // Relacionamentos
+  ownedWorkspaces     Workspace[]        @relation("WorkspaceOwner")
+  ownedProjects       Project[]          @relation("ProjectOwner")
+  ownedTasks          Task[]             @relation("TaskOwner")
+  responsibleTasks    Task[]             @relation("TaskResponsible")
+  comments            Comment[]
+  workspaceMembers    MembersWorkspace[]
+  invitedMembers      MembersWorkspace[] @relation("MemberInviter")
+  subscriptions       Subscription[]
+  sentInvitations     Invitations[]      @relation("InvitationSender")
+  acceptedInvitations Invitations[]      @relation("InvitationAccepter")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Workspace {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  ownerId     Int
+
+  // Relacionamentos
+  owner       User               @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  members     MembersWorkspace[]
+  invitations Invitations[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("workspaces")
+}
+
+model Project {
+  id          Int    @id @default(autoincrement())
+  name        String
+  ownerId     Int
+  workspaceId Int?
+
+  // Relacionamentos
+  owner     User           @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  workspace Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lists     List[]
+  status    StatusProject?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model List {
+  id        Int    @id @default(autoincrement())
+  name      String
+  projectId Int
+
+  // Relacionamentos
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("lists")
+}
+
+model Task {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  subtask       Json?
+  ownerId       Int
+  listId        Int?
+  status        String
+  priority      String
+  responsibleId Int?
+  conclusion    DateTime?
+
+  // Relacionamentos
+  owner       User      @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  responsible User?     @relation("TaskResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  list        List?     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tasks")
+}
+
+model Comment {
+  id       Int     @id @default(autoincrement())
+  authorId Int
+  taskId   Int
+  comment  String
+  midia    String?
+
+  // Relacionamentos
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model StatusProject {
+  id        Int    @id @default(autoincrement())
+  name      String
+  color     String
+  projectId Int    @unique
+
+  // Relacionamentos
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("status_projects")
+}
+
+model MembersWorkspace {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  userId      Int
+  role        String
+  inviteById  Int
+  joinedAt    DateTime @default(now())
+
+  // Relacionamentos
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inviteBy  User      @relation("MemberInviter", fields: [inviteById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@map("members_workspaces")
+}
+
+model Plan {
+  id          Int     @id @default(autoincrement())
+  price       String
+  name        String
+  description String?
+
+  // Relacionamentos
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("plans")
+}
+
+model Subscription {
+  id     Int @id @default(autoincrement())
+  userId Int
+  planId Int
+
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, planId])
+  @@map("subscriptions")
+}
+
+model Invitations {
+  id               Int       @id @default(autoincrement())
+  email            String
+  workspaceId      Int
+  token            String    @unique
+  inviteById       Int
+  acceptedAt       DateTime?
+  acceptedByUserId Int?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relacionamentos
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviteBy   User      @relation("InvitationSender", fields: [inviteById], references: [id], onDelete: Cascade)
+  acceptedBy User?     @relation("InvitationAccepter", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, email])
+  @@map("invitations")
+}
