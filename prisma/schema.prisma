@@ -14,14 +14,14 @@ datasource db {
 }
 
 model User {
-  id        String  @id @default(uuid())
-  name      String
-  email     String  @unique
-  password  String?
-  phone     String?
-  avatarURL String?
-  google    Boolean @default(false)
-  googleId  String? @unique
+  id         String  @id @default(uuid())
+  name       String
+  email      String  @unique
+  password   String?
+  phone      String?
+  avatarURL  String?
+  provider   String  @default("LOCAL")
+  providerId String? @unique
 
   // Relacionamentos
   ownedWorkspaces     Workspace[]        @relation("WorkspaceOwner")
@@ -48,7 +48,7 @@ model Workspace {
   ownerId     String
 
   // Relacionamentos
-  owner       User   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User               @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   projects    Project[]
   members     MembersWorkspace[]
   invitations Invitations[]
@@ -60,7 +60,7 @@ model Workspace {
 }
 
 model Project {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
   ownerId     String
   workspaceId String?
@@ -137,7 +137,7 @@ model StatusProject {
   id        String @id @default(uuid())
   name      String
   color     String
-  projectId String    @unique
+  projectId String @unique
 
   // Relacionamentos
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
