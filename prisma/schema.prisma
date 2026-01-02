@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(uuid())
   name      String
   email     String  @unique
   password  String?
@@ -34,21 +34,21 @@ model User {
   subscriptions       Subscription[]
   sentInvitations     Invitations[]      @relation("InvitationSender")
   acceptedInvitations Invitations[]      @relation("InvitationAccepter")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  refreshTokens       RefreshToken[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@map("users")
 }
 
 model Workspace {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(uuid())
   name        String
   description String?
-  ownerId     Int
+  ownerId     String
 
   // Relacionamentos
-  owner       User               @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   projects    Project[]
   members     MembersWorkspace[]
   invitations Invitations[]
@@ -60,10 +60,10 @@ model Workspace {
 }
 
 model Project {
-  id          Int    @id @default(autoincrement())
+  id          String @id @default(uuid())
   name        String
-  ownerId     Int
-  workspaceId Int?
+  ownerId     String
+  workspaceId String?
 
   // Relacionamentos
   owner     User           @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
@@ -78,9 +78,9 @@ model Project {
 }
 
 model List {
-  id        Int    @id @default(autoincrement())
+  id        String @id @default(uuid())
   name      String
-  projectId Int
+  projectId String
 
   // Relacionamentos
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -93,15 +93,15 @@ model List {
 }
 
 model Task {
-  id            Int       @id @default(autoincrement())
+  id            String    @id @default(uuid())
   name          String
   description   String?
   subtask       Json?
-  ownerId       Int
-  listId        Int?
+  ownerId       String
+  listId        String?
   status        String
   priority      String
-  responsibleId Int?
+  responsibleId String?
   conclusion    DateTime?
 
   // Relacionamentos
@@ -117,9 +117,9 @@ model Task {
 }
 
 model Comment {
-  id       Int     @id @default(autoincrement())
-  authorId Int
-  taskId   Int
+  id       String  @id @default(uuid())
+  authorId String
+  taskId   String
   comment  String
   midia    String?
 
@@ -134,10 +134,10 @@ model Comment {
 }
 
 model StatusProject {
-  id        Int    @id @default(autoincrement())
+  id        String @id @default(uuid())
   name      String
   color     String
-  projectId Int    @unique
+  projectId String    @unique
 
   // Relacionamentos
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -149,11 +149,11 @@ model StatusProject {
 }
 
 model MembersWorkspace {
-  id          Int      @id @default(autoincrement())
-  workspaceId Int
-  userId      Int
+  id          String   @id @default(uuid())
+  workspaceId String
+  userId      String
   role        String
-  inviteById  Int
+  inviteById  String
   joinedAt    DateTime @default(now())
 
   // Relacionamentos
@@ -169,7 +169,7 @@ model MembersWorkspace {
 }
 
 model Plan {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(uuid())
   price       String
   name        String
   description String?
@@ -184,9 +184,9 @@ model Plan {
 }
 
 model Subscription {
-  id     Int @id @default(autoincrement())
-  userId Int
-  planId Int
+  id     String @id @default(uuid())
+  userId String
+  planId String
 
   // Relacionamentos
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -200,13 +200,13 @@ model Subscription {
 }
 
 model Invitations {
-  id               Int       @id @default(autoincrement())
+  id               String    @id @default(uuid())
   email            String
-  workspaceId      Int
+  workspaceId      String
   token            String    @unique
-  inviteById       Int
+  inviteById       String
   acceptedAt       DateTime?
-  acceptedByUserId Int?
+  acceptedByUserId String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -217,4 +217,15 @@ model Invitations {
 
   @@unique([workspaceId, email])
   @@map("invitations")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
