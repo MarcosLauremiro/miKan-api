@@ -6,6 +6,7 @@ import { AuthController } from "./auth.controller";
 import { PassportModule } from "@nestjs/passport";
 import { GoogleStrategy } from "./strategies/google.strategy";
 import { GithubStrategy } from "./strategies/github.strategy";
+import { ProtectRoute } from "./guards/protect-route-auth.guard";
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { GithubStrategy } from "./strategies/github.strategy";
         PrismaService,
         GoogleStrategy,
         GithubStrategy,
+        ProtectRoute
     ],
     exports:[
         AuthService

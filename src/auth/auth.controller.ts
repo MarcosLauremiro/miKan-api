@@ -5,10 +5,13 @@ import { RegisterDTO } from './dto/auth.register.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { GithubAuthGuard } from './guards/github-auth.guard';
 import { Response } from 'express';
+import { ProtectRoute } from './guards/protect-route-auth.guard';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   async login(@Body() loginDto: LoginDTO) {
@@ -31,7 +34,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req, @Res() res: Response) {
     const { user, accessToken, refreshToken } = await this.authService.validateOAuthLogin(req.user);
-    
+
     // Redireciona para o frontend com os tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(
@@ -50,7 +53,7 @@ export class AuthController {
   @UseGuards(GithubAuthGuard)
   async githubAuthCallback(@Req() req, @Res() res: Response) {
     const { user, accessToken, refreshToken } = await this.authService.validateOAuthLogin(req.user);
-    
+
     // Redireciona para o frontend com os tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(
@@ -66,5 +69,14 @@ export class AuthController {
   @Post('logout')
   async logout(@Body('refreshToken') refreshToken: string) {
     return this.authService.logout(refreshToken);
+  }
+
+  @ApiTags('Users')
+  @ApiBearerAuth('access-token')
+  @Post("me")
+  @UseGuards(ProtectRoute)
+  me(@CurrentUser() user) {
+    console.log(user)
+    return `testando o guard ${user.name}`
   }
 }
