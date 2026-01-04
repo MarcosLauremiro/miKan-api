@@ -24,7 +24,8 @@ import { ProtectRoute } from "./guards/protect-route-auth.guard";
         ProtectRoute
     ],
     exports:[
-        AuthService
+        AuthService,
+        ProtectRoute
     ]
 })
 
