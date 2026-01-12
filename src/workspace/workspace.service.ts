@@ -660,8 +660,6 @@ export class WorkspaceService {
             }
         });
 
-        console.log("all invitation",invitations)
-
         const validInvitations = invitations.filter(inv => {
             const expirationDate = new Date(inv.createdAt);
             expirationDate.setDate(expirationDate.getDate() + 7);

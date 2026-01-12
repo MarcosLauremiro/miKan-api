@@ -93,7 +93,6 @@ export class ProjectService {
 
             // 3. Criar status do projeto
 
-            console.log("status",newProject)
             await tx.statusProject.createMany({
                 data: statusToCreate.map(status => ({
                     name: status.name,

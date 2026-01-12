@@ -4,6 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ConfigModule } from '@nestjs/config';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { ProjectModule } from './project/project.module';
+import { ListModule } from './list/list.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { ProjectModule } from './project/project.module';
     }),
     AuthModule,
     WorkspaceModule,
-    ProjectModule
+    ProjectModule,
+    ListModule
   ],
   controllers: [],
   providers: [],

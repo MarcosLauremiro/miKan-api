@@ -76,7 +76,6 @@ export class AuthController {
   @Post("me")
   @UseGuards(ProtectRoute)
   me(@CurrentUser() user) {
-    console.log(user)
     return `testando o guard ${user.name}`
   }
 }
