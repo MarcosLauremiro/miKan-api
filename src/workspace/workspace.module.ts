@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { WrokspaceController } from "./workspace.controller";
 import { WorkspaceService } from "./workspace.service";
-import { PrismaService } from "../prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { ProtectRoute } from "../auth/guards/protect-route-auth.guard";
 import { WorkspaceMemberRoleUpdatedListener } from "./listeners/workspace-member-role-updated.listener";
 import { WorkspaceMemberRemovedListener } from "./listeners/workspace-member-removed.listener";

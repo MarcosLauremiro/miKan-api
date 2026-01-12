@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ConfigModule } from '@nestjs/config';
 import { WorkspaceModule } from './workspace/workspace.module';
+import { ProjectModule } from './project/project.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { WorkspaceModule } from './workspace/workspace.module';
       envFilePath: '.env',
     }),
     AuthModule,
-    WorkspaceModule
+    WorkspaceModule,
+    ProjectModule
   ],
   controllers: [],
   providers: [],

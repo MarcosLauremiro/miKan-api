@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { PrismaService } from "../prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { LoginDTO } from "./dto/auth.login.dto";
 import * as bcrypt from 'bcrypt';
 import { RegisterDTO } from "./dto/auth.register.dto";

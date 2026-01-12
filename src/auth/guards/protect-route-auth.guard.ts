@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import jwt from 'jsonwebtoken';
-import { PrismaService } from "../../prisma.service";
+import { PrismaService } from "../../../prisma/prisma.service";
 
 @Injectable()
 export class ProtectRoute implements CanActivate {

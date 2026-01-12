@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { WorkspaceInvitationAcceptedEvent } from '../event/workspace-invitation-accepted.event';
-import { PrismaService } from '../../prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()

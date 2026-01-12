@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { WorkspaceCreateDTO } from "./dto/workspace.dto";
-import { User } from "@prisma/client";
 import { WorkspaceInviteMemberEvent } from "./event/workspace-invite-member.event";
 import { WorkspaceMemberLeftEvent } from "./event/workspace-member-left.event";
 import { WorkspaceInvitationAcceptedEvent } from "./event/workspace-invitation-accepted.event";
 import { WorkspaceInvitationDeclinedEvent } from "./event/workspace-invitation-declined.event";
+import { User } from "../../generated/prisma/browser";
 
 @Injectable()
 export class WorkspaceService {

@@ -4,9 +4,9 @@ import { WorkspaceCreateDTO } from "./dto/workspace.dto";
 import { ProtectRoute } from "../auth/guards/protect-route-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { User } from "@prisma/client";
 import { AddMemberDTO } from "./dto/workspace.addMember.dto";
 import { UpdateMemberRoleDTO } from "./dto/workspace.update.member.dto";
+import { User } from "../../generated/prisma/browser";
 
 
 @ApiTags('Workspace')

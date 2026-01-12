@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { WelcomeEmailListener } from "./listeners/welcome-email.listener";
 import { AuthService } from "./auth.service";
-import { PrismaService } from "../prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { AuthController } from "./auth.controller";
 import { PassportModule } from "@nestjs/passport";
 import { GoogleStrategy } from "./strategies/google.strategy";
