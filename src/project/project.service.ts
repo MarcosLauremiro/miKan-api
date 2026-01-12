@@ -133,9 +133,13 @@ export class ProjectService {
                 project!.id,
                 project!.name,
                 user.id,
-                workspaceId
+                user.name,
+                workspaceId || null,
+                project!.workspace?.name || null,
+                project!.private!
             )
         );
+    
 
         return {
             message: "Projeto criado com sucesso",
