@@ -70,9 +70,7 @@ model Project {
   owner     User       @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   lists     List[]
-
-  // Alterado de StatusProject? para StatusProject[] para indicar uma lista (1:N)
-  status StatusProject[]
+  status    StatusProject[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,15 +100,16 @@ model Task {
   subtask       Json?
   ownerId       String
   listId        String?
-  status        String
+  statusId      String
   priority      String
   responsibleId String?
   conclusion    DateTime?
 
   // Relacionamentos
-  owner       User      @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  responsible User?     @relation("TaskResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
-  list        List?     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  owner       User           @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  responsible User?          @relation("TaskResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  list        List?          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  status      StatusProject  @relation(fields: [statusId], references: [id])
   comments    Comment[]
 
   createdAt DateTime @default(now())
@@ -140,10 +139,11 @@ model StatusProject {
   id        String @id @default(uuid())
   name      String
   color     String
-  projectId String // Removido o @unique para permitir múltiplos status por projeto
+  projectId String
 
   // Relacionamentos
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]  // Adicionado para manter a relação inversa com as tarefas
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
