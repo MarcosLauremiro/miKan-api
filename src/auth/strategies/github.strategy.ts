@@ -1,6 +1,7 @@
+// src/auth/strategies/github.strategy.ts
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-github2';
+import { Strategy, Profile } from 'passport-github2';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -11,24 +12,39 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       callbackURL: process.env.GITHUB_CALLBACK_URL!,
       scope: ['user:email'],
     });
+
   }
 
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
-    done: Function,
+    profile: Profile,
+    done: (error: any, user?: any) => void,
   ): Promise<any> {
-    const { id, username, emails, photos } = profile;
-    
-    const user = {
-      providerId: id,
-      email: emails[0].value,
-      name: profile.displayName || username,
-      picture: photos?.[0]?.value,
-      provider: 'GITHUB',
-    };
-    
-    done(null, user);
+    try {
+
+      const { id, displayName, emails, photos, username } = profile;
+
+      // GitHub pode não retornar email se o perfil for privado
+      const email = emails?.[0]?.value;
+
+      if (!email) {
+        console.error('❌ Email não fornecido pelo GitHub');
+        return done(new Error('Email é obrigatório. Configure seu email como público no GitHub.'), null);
+      }
+
+      const user = {
+        providerId: id,
+        email,
+        name: displayName || username || email.split('@')[0],
+        picture: photos?.[0]?.value,
+        provider: 'GITHUB' as const,
+      };
+
+      done(null, user);
+    } catch (error) {
+      console.error('❌ Erro no GitHub Strategy:', error);
+      done(error, null);
+    }
   }
 }
