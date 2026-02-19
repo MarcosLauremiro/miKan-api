@@ -9,10 +9,11 @@ import { WorkspaceMemberLeftListener } from "./listeners/workspace-member-left.l
 import { WorkspaceMemberAddedListener } from "./listeners/workspace-member-added.listener";
 import { WorkspaceInviteListener } from "./listeners/workspace-invite.listener";
 import { WorkspaceInvitationAcceptedListener } from "./listeners/workspace-invitation-accepted.listener";
+import { LogModule } from "../log/logs.module";
 
 
 @Module({
-    imports: [],
+    imports: [LogModule],
     controllers: [WrokspaceController],
     providers: [
         WorkspaceService,

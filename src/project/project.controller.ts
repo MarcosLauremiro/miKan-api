@@ -31,12 +31,12 @@ export class ProjectController {
         return this.projectService.create(projectCreateDto, user, workspaceId);
     }
 
-    @Get()
+    @Get('workspace/:workspaceId')
     @ApiOperation({ summary: 'Listar todos os projetos do usuário' })
-    @ApiQuery({ name: 'workspaceId', required: false, description: 'Filtrar por workspace' })
+    @ApiParam({ name: 'workspaceId', required: false, description: 'Filtrar por workspace' })
     @ApiResponse({ status: 200, description: 'Lista de projetos' })
     async findAll(
-        @Query('workspaceId') workspaceId: string,
+        @Param('workspaceId') workspaceId: string,
         @CurrentUser() user: User
     ) {
         return this.projectService.findAll(user, workspaceId);

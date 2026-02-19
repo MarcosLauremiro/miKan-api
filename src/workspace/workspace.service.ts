@@ -7,12 +7,15 @@ import { WorkspaceMemberLeftEvent } from "./event/workspace-member-left.event";
 import { WorkspaceInvitationAcceptedEvent } from "./event/workspace-invitation-accepted.event";
 import { WorkspaceInvitationDeclinedEvent } from "./event/workspace-invitation-declined.event";
 import { User } from "../../generated/prisma/browser";
+import { LogService } from "../log/logs.service";
+import { LogAction } from "../common/enums/log-action.enum";
 
 @Injectable()
 export class WorkspaceService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly eventEmitter: EventEmitter2
+        private readonly eventEmitter: EventEmitter2,
+        private readonly logService: LogService
     ) { }
 
     async createWorkspace(workspaceDTO: WorkspaceCreateDTO, user: User) {
@@ -33,11 +36,27 @@ export class WorkspaceService {
                     workspaceId: newWorkspace.id,
                     userId: user.id,
                     role: 'OWNER',
-                    inviteById: user.id 
+                    inviteById: user.id
                 }
             });
 
             return newWorkspace;
+        });
+
+        await this.logService.create({
+            type: "audit",
+            action: LogAction.WORKSPACE_CREATED,
+            module: 'workspace',
+            entity: 'Workspace',
+            entityId: workspace.id,
+            workspaceId: workspace.id,
+            actor: {
+                id: user.id,
+                email: user.email,
+            },
+            changes: {
+                after: workspace,
+            },
         });
 
         return {
@@ -128,6 +147,29 @@ export class WorkspaceService {
         }
 
         await this.prisma.workspace.delete({ where: { id } });
+
+        await this.logService.create({
+            type: 'audit',
+            action: LogAction.WORKSPACE_DELETED,
+            module: 'workspace',
+            entity: 'workspace',
+            entityId: id,
+            workspaceId: id,
+
+            actor: {
+                id: user.id,
+                email: user.email,
+            },
+
+            changes: {
+                before: workspace,
+                after: null,
+            },
+
+            metadata: {
+                deletedByOwner: true,
+            },
+        });
     }
 
     async addMemberToWorkspace(id: string, email: string, role: string, user: User) {
@@ -168,7 +210,8 @@ export class WorkspaceService {
                 throw new HttpException("Já existe um convite pendente para este email", HttpStatus.CONFLICT);
             }
 
-            const token = this.generateInviteToken(); 
+            const token = this.generateInviteToken();
+
             await this.prisma.invitations.create({
                 data: {
                     email,
@@ -189,6 +232,35 @@ export class WorkspaceService {
                     token
                 )
             );
+
+            await this.logService.create({
+                type: 'audit',
+                action: LogAction.WORKSPACE_ADD_MEMBER,
+                module: 'workspace',
+                entity: 'workspace_member',
+                entityId: 'INVITE_' + email,
+                workspaceId: id,
+
+                actor: {
+                    id: user.id,
+                    email: user.email,
+                },
+
+                changes: {
+                    before: null,
+                    after: {
+                        email,
+                        role,
+                        type: 'INVITE'
+                    },
+                },
+
+                metadata: {
+                    invitedBy: user.id,
+                    workspaceName: workspace.name,
+                },
+            });
+
 
             return { message: "Convite enviado por email", type: "INVITE" };
         }
@@ -211,6 +283,34 @@ export class WorkspaceService {
                 role: role,
                 inviteById: user.id
             }
+        });
+
+        await this.logService.create({
+            type: 'audit',
+            action: LogAction.WORKSPACE_ADD_MEMBER,
+            module: 'workspace',
+            entity: 'workspace_member',
+            entityId: userInvite.id,
+            workspaceId: id,
+
+            actor: {
+                id: user.id,
+                email: user.email,
+            },
+
+            changes: {
+                before: null,
+                after: {
+                    userId: userInvite.id,
+                    email: userInvite.email,
+                    role,
+                },
+            },
+
+            metadata: {
+                addedBy: user.id,
+                workspaceName: workspace.name,
+            },
         });
 
         this.eventEmitter.emit(
@@ -319,6 +419,36 @@ export class WorkspaceService {
             }
         });
 
+        await this.logService.create({
+            type: 'audit',
+            action: LogAction.WORKSPACE_UPDATE_MEMBER_ROLE,
+            module: 'workspace',
+            entity: 'workspace_member',
+            entityId: memberId,
+            workspaceId,
+
+            actor: {
+                id: user.id,
+                email: user.email,
+            },
+
+            changes: {
+                before: {
+                    role: memberToUpdate.role,
+                },
+                after: {
+                    role,
+                },
+            },
+
+            metadata: {
+                memberUserId: memberToUpdate.user.id,
+                memberEmail: memberToUpdate.user.email,
+                workspaceName: workspace.name,
+            },
+        });
+
+
         this.eventEmitter.emit(
             "workspace.member.role.updated",
             {
@@ -413,6 +543,35 @@ export class WorkspaceService {
             where: { id: memberId }
         });
 
+        await this.logService.create({
+            type: 'audit',
+            action: LogAction.WORKSPACE_REMOVE_MEMBER,
+            module: 'workspace',
+            entity: 'workspace_member',
+            entityId: memberId,
+            workspaceId,
+
+            actor: {
+                id: user.id,
+                email: user.email,
+            },
+
+            changes: {
+                before: {
+                    userId: memberToRemove.user.id,
+                    email: memberToRemove.user.email,
+                    role: memberToRemove.role,
+                },
+                after: null,
+            },
+
+            metadata: {
+                removedBy: user.id,
+                workspaceName: workspace.name,
+            },
+        });
+
+
         this.eventEmitter.emit(
             "workspace.member.removed",
             {
@@ -468,6 +627,35 @@ export class WorkspaceService {
         await this.prisma.membersWorkspace.delete({
             where: { id: member.id }
         });
+
+        await this.logService.create({
+            type: 'audit',
+            action: LogAction.WORKSPACE_LEAVE,
+            module: 'workspace',
+            entity: 'workspace_member',
+            entityId: member.id,
+            workspaceId,
+
+            actor: {
+                id: user.id,
+                email: user.email,
+                role: member.role,
+            },
+
+            changes: {
+                before: {
+                    userId: user.id,
+                    role: member.role,
+                },
+                after: null,
+            },
+
+            metadata: {
+                workspaceName: workspace!.name,
+                reason: 'SELF_LEAVE',
+            },
+        });
+
 
         this.eventEmitter.emit(
             "workspace.member.left",
@@ -541,7 +729,7 @@ export class WorkspaceService {
                 data: {
                     workspaceId: invitation.workspaceId,
                     userId: user.id,
-                    role: 'MEMBER', 
+                    role: 'MEMBER',
                     inviteById: invitation.inviteById
                 },
                 include: {

@@ -6,6 +6,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
 import { ProjectModule } from './project/project.module';
 import { ListModule } from './list/list.module';
 import { UserModule } from './user/user.module';
+import { LogModule } from './log/logs.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { UserModule } from './user/user.module';
     WorkspaceModule,
     ProjectModule,
     ListModule,
-    UserModule
+    UserModule,
+    LogModule
   ],
   controllers: [],
   providers: [],

@@ -45,6 +45,7 @@ model Workspace {
   id          String  @id @default(uuid())
   name        String
   description String?
+  color       String @default("#00000")
   ownerId     String
 
   // Relacionamentos
@@ -67,8 +68,8 @@ model Project {
   private     Boolean?
 
   // Relacionamentos
-  owner     User       @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  owner     User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  workspace Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   lists     List[]
   status    StatusProject[]
 
@@ -106,10 +107,10 @@ model Task {
   conclusion    DateTime?
 
   // Relacionamentos
-  owner       User           @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  responsible User?          @relation("TaskResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
-  list        List?          @relation(fields: [listId], references: [id], onDelete: Cascade)
-  status      StatusProject  @relation(fields: [statusId], references: [id])
+  owner       User          @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  responsible User?         @relation("TaskResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  list        List?         @relation(fields: [listId], references: [id], onDelete: Cascade)
+  status      StatusProject @relation(fields: [statusId], references: [id])
   comments    Comment[]
 
   createdAt DateTime @default(now())
@@ -143,7 +144,7 @@ model StatusProject {
 
   // Relacionamentos
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]  // Adicionado para manter a relação inversa com as tarefas
+  tasks   Task[] // Adicionado para manter a relação inversa com as tarefas
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
